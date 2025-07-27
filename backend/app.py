@@ -30,10 +30,18 @@ import numpy as np
 from plyfile import PlyData, PlyElement
 from flask_cors import CORS
 import os
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
+
+# 获取当前脚本所在目录的绝对路径
+current_dir = os.path.dirname(os.path.abspath(__file__))
 # 初始化 Flask 应用
 app = Flask(__name__)
 CORS(app)  # 启用 CORS，支持跨域请求，允许前端从不同域名访问服务
+@app.route('/')  # 新增根路径路由
+def index():
+    return "点云服务已启动，可访问 /generate-ply 接口生成 PLY 文件", 200
 
 @app.route('/generate-ply', methods=['POST'])
 def generate_ply():
@@ -65,7 +73,7 @@ def generate_ply():
         return Response('min_val 必须小于 max_val', status=400)
 
     # 配置参数
-    input_file = "Saltf"  # 输入文件路径（Saltf 文件）
+    input_file = os.path.join(current_dir, 'Saltf')  # 输入文件路径（Saltf 文件）
     n1, n2, n3 = 210, 676, 676  # 点云数据的维度（X, Y, Z 方向的点数）
     spacing = (20.0, 20.0, 20.0)  # 点云网格的间距（X, Y, Z 方向）
     origin = (0.0, 0.0, 0.0)  # 点云网格的原点坐标
@@ -109,15 +117,49 @@ def generate_ply():
 
     # 创建 PLY 数据
     # 定义结构化数组，包含 x, y, z 和 scalar 四个浮点数属性
+        # 正常化 scalar 到 0-255，并映射到 RGB（这里用色图也可以）
+    # --- 映射 scalar 值到颜色 ---
+    scalar_min = values_vals.min()
+    scalar_max = values_vals.max()
+
+    # 避免除以 0
+    scalar_range = scalar_max - scalar_min
+    if scalar_range == 0:
+        normalized = np.zeros_like(values_vals)
+    else:
+        normalized = (values_vals - scalar_min) / scalar_range
+
+    # 示例：用蓝绿红渐变映射标量值
+   # 示例：用蓝绿红渐变映射标量值
+    # 使用 matplotlib colormap（如 viridis）映射 normalized 到颜色
+    colormap = cm.get_cmap('viridis')  # 可换成 'plasma', 'inferno' 等
+
+    # 映射 normalized 值（0~1）到 RGBA（0~1）
+    rgba_colors = colormap(normalized)
+
+    # 转换为 RGB 值（0~255）
+    r = (rgba_colors[:, 0] * 255).astype(np.uint8)
+    g = (rgba_colors[:, 1] * 255).astype(np.uint8)
+    b = (rgba_colors[:, 2] * 255).astype(np.uint8)
+
+
+
+# 构建带颜色的结构化数组
+  # --- 创建带颜色的结构化数组 ---
     vertices = np.zeros(
         len(x_vals),
-        dtype=[('x', 'f4'), ('y', 'f4'), ('z', 'f4'), ('scalar', 'f4')]
+        dtype=[
+            ('x', 'f4'), ('y', 'f4'), ('z', 'f4'),
+            ('red', 'u1'), ('green', 'u1'), ('blue', 'u1')
+        ]
     )
-    vertices['x'] = x_vals  # 填充 X 坐标
-    vertices['y'] = y_vals  # 填充 Y 坐标
-    vertices['z'] = z_vals  # 填充 Z 坐标
-    vertices['scalar'] = values_vals  # 填充强度值
-
+    vertices['x'] = x_vals
+    vertices['y'] = y_vals
+    vertices['z'] = z_vals
+    vertices['red'] = r
+    vertices['green'] = g
+    vertices['blue'] = b
+    
     # 创建 PLY 元素，描述顶点数据
     element = PlyElement.describe(vertices, 'vertex')
     # 创建 PLY 数据对象，使用二进制小端格式

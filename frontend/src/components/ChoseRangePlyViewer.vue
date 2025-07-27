@@ -84,21 +84,22 @@ onMounted(() => {
   // 添加鼠标移动事件监听器，用于显示鼠标悬停点的 3D 坐标
   const interactor = renderWindow.getInteractor();
   interactor.onMouseMove((event) => {
-    // 获取鼠标在窗口中的位置
-    const mousePos = interactor.getEventPosition();
-    // 创建并配置点拾取器，设置容差值为 0.001
-    const picker = vtkCellPicker.newInstance();
-    picker.setTolerance(0.001);
-    // 执行拾取操作，获取鼠标位置对应的 3D 点
-    picker.pick(mousePos[0], mousePos[1], 0, renderer);
+  // 从事件对象中直接获取鼠标位置（x: 横向坐标, y: 纵向坐标）
+  const mousePos = event.position; 
+  
+  // 创建并配置点拾取器
+  const picker = vtkCellPicker.newInstance();
+  picker.setTolerance(0.001);
+  // 执行拾取操作（参数：x, y, 0, 渲染器）
+  picker.pick(mousePos[0], mousePos[1], 0, renderer);
 
-    const pickedPosition = picker.getPickPosition();
-    if (pickedPosition) {
-      // 如果拾取到点，获取其 3D 坐标并显示
-      const [x, y, z] = pickedPosition;
-      document.getElementById('coordinate-display').innerText = `X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}, Z: ${z.toFixed(2)}`;
-    }
-  });
+  const pickedPosition = picker.getPickPosition();
+  if (pickedPosition) {
+    const [x, y, z] = pickedPosition;
+    document.getElementById('coordinate-display').innerText = 
+      `X: ${x.toFixed(2)}, Y: ${y.toFixed(2)}, Z: ${z.toFixed(2)}`;
+  }
+});
 });
 
 // 组件卸载时清理资源
