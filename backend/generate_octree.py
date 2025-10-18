@@ -68,7 +68,7 @@ class OctreeNode:
 
 def main():
     # File path in current directory
-    input_file = 'saltf'
+    input_file = 'Saltf'
 
     # Dimensions from the format
     nx, ny, nz = 676, 676, 210

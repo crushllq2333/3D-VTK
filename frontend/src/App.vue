@@ -1,3 +1,4 @@
+<!-- src/App.vue -->
 <template>
   <!-- <Viewer3D /> -->
   <!-- <IsoSurfaceViewer /> -->
@@ -28,10 +29,10 @@ import ChoseRangeVtpGlyphViewer from './components/ChoseRangeVtpGlyphViewer.vue'
 import ChoseRangeVtiViewer from './components/ChoseRangeVtiViewer.vue';
 import ChoseRangeVtpViewer from './components/ChoseRangeVtpViewer.vue';
 import DiffCubeViewer from './components/DiffCubeViewer.vue';
-import OctreeViewer from './components/OctreeViewer.vue';
-// import OctreeByApiViewer from './components/OctreeByApiViewer.vue';
+
+
 import MultiModelViewer from './components/MultiModelViewer.vue';
-import OctreeBinViewer from './components/OctreeBinViewer.vue';
+import OctreeBinViewer from './components/OctreeBinViewer.vue'
 import PointOctreeviewer from './components/PointOctreeviewer.vue';
-import VtpPointViewer from './components/VtpPointViewer.vue';
+
 </script>
